@@ -113,7 +113,7 @@ class DatasetController(BaseController[Dataset]):
             name=name,
             description=description,
             connector_type=ConnectorType.CSV,
-            config={},
+            config=config,
             head=head,
         )
 
