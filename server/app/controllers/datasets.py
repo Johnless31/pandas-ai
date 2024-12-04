@@ -47,11 +47,12 @@ class DatasetController(BaseController[Dataset]):
     
     @Transactional(propagation=Propagation.REQUIRED)
     async def delete_datasets(self, dataset_id, user):
-        await self.get_dataset_by_id(dataset_id)
+        dataset = await self.get_dataset_by_id(dataset_id)
         await self.space_repository.delete_datasetspace(dataset_id, user.space.id)
 
-        file_path = os.path.join(os.getcwd(), 'data', f"{dataset_id}.csv")
-        if not os.path.exists(file_path):
+        # file_path = os.path.join(os.getcwd(), 'data', f"{dataset_id}.csv")
+        file_path = dataset.connector.config.get("file_path", None)
+        if (file_path is None) or (not os.path.exists(file_path)):
             raise NotFoundException(
                 "File not found!"
             )
@@ -92,6 +93,20 @@ class DatasetController(BaseController[Dataset]):
             "rows": rows[:5]
         }
 
+        file_path = os.path.join(os.getcwd(), 'data', f"{name}.csv")
+        # Rewind the file and save it to disk
+        file.file.seek(0)
+        try:
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(file.file, buffer)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
+
+        config = {
+            "file_path": file_path,
+            "file_name": f"{name}.csv"
+        }
+
         dataset = await self.dataset_repository.create_dataset(
             user_id=user.id,
             organization_id=user.organizations[0].id,
@@ -102,26 +117,26 @@ class DatasetController(BaseController[Dataset]):
             head=head,
         )
 
-        dataset_id = dataset.id
-        file_path = os.path.join(os.getcwd(), 'data', f"{dataset_id}.csv")
-        # Rewind the file and save it to disk
-        file.file.seek(0)
-        try:
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
+        # dataset_id = dataset.id
+        # file_path = os.path.join(os.getcwd(), 'data', f"{dataset_id}.csv")
+        # # Rewind the file and save it to disk
+        # file.file.seek(0)
+        # try:
+        #     with open(file_path, "wb") as buffer:
+        #         shutil.copyfileobj(file.file, buffer)
+        # except Exception as e:
+        #     raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}")
         
-        await self.space_repository.add_dataset_to_space(workspace_id=user.space.id,dataset_id=dataset_id)
+        await self.space_repository.add_dataset_to_space(workspace_id=user.space.id,dataset_id=dataset.id)
 
         return DatasetsDetailsResponseModel(dataset=dataset)
     
 
     async def download_dataset(self, dataset_id):
         await self.get_dataset_by_id(dataset_id)
-        file_path = os.path.join(os.getcwd(), 'data', f"{dataset_id}.csv")
-
-        if not os.path.exists(file_path):
+        # file_path = os.path.join(os.getcwd(), 'data', f"{dataset_id}.csv")
+        file_path = dataset.connector.config.get("file_path", None)
+        if (file_path is None) or (not os.path.exists(file_path)):
             raise HTTPException(status_code=404, detail="File not found")
 
         return FileResponse(file_path, filename=f"{dataset_id}.csv", media_type='text/csv')

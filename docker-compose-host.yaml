@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgresql:
+    image: postgres:14.2-alpine
+    environment:
+      POSTGRES_USER: pandasai
+      POSTGRES_PASSWORD: pas2sw1ord!
+      POSTGRES_DB: pandasai-db
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    network_mode: "host"
+
+  server:
+    container_name: pandabi-backend
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./server/.env
+    environment:
+      - POSTGRES_URL=postgresql+asyncpg://pandasai:pas2sw1ord!@127.0.0.1:5432/pandasai-db
+      - TEST_POSTGRES_URL=postgresql+asyncpg://pandasai:pas2sw1ord!@127.0.0.1:5432/pandasai-db
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NO_PROXY=${NO_PROXY:-}
+    depends_on:
+      - postgresql
+    network_mode: "host"
+    command: "/bin/bash startup.sh"
+
+  client:
+    container_name: pandabi-frontend
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - ./client/.env
+    environment:
+      - NODE_ENV=development
+    network_mode: "host"
+    command: npm run start

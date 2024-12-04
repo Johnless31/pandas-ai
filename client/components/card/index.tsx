@@ -2,7 +2,7 @@ import React from "react";
 function Card(props: {
   className?: string;
   extra?: string;
-  children?: React.ReactNode | Element;
+  children?: React.ReactNode;
   default?: boolean;
 }) {
   const { extra, children, ...rest } = props;

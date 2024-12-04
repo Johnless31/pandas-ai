@@ -1,0 +1,8 @@
+- git clone git@github.com:Johnless31/pandas-ai.git/
+- cd pandas-ai
+- cp client/.env.example client/.env
+- cp server/.env.example server/.env
+- 在server/.env文件中，填上你的key；代理地址填写正确（能直连墙外的可以删掉代理配置HTTP_PROXY，HTTPS_PROXY，NO_PROXY）
+- 在client/.env文件中，将NEXT_PUBLIC_API_URL的ip填写正确，写server端所在机器的公网ip，因为js要靠该地址与后端交互
+- docker-compose -f ./docker-compose-host.yaml build
+- docker-compose -f ./docker-compose-host.yaml up -d
