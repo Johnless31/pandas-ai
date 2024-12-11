@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import SettingsLeftBar from "@/components/SettingsLayout/LeftBar";
 import LeftBarDrawer from "@/components/SettingsLayout/LeftBarDrawer";
 
-export default async function SettingsLayout({
+export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;

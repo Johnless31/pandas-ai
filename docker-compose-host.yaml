@@ -5,7 +5,7 @@ services:
     image: postgres:14.2-alpine
     environment:
       POSTGRES_USER: pandasai
-      POSTGRES_PASSWORD: pas2sw1ord!
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: pandasai-db
     volumes:
       - ./pgdata:/var/lib/postgresql/data
@@ -20,8 +20,8 @@ services:
     env_file:
       - ./server/.env
     environment:
-      - POSTGRES_URL=postgresql+asyncpg://pandasai:pas2sw1ord!@127.0.0.1:5432/pandasai-db
-      - TEST_POSTGRES_URL=postgresql+asyncpg://pandasai:pas2sw1ord!@127.0.0.1:5432/pandasai-db
+      - POSTGRES_URL=postgresql+asyncpg://pandasai:${POSTGRES_PASSWORD}@127.0.0.1:5432/pandasai-db
+      - TEST_POSTGRES_URL=postgresql+asyncpg://pandasai:${POSTGRES_PASSWORD}@127.0.0.1:5432/pandasai-db
       - HTTP_PROXY=${HTTP_PROXY:-}
       - HTTPS_PROXY=${HTTPS_PROXY:-}
       - NO_PROXY=${NO_PROXY:-}
