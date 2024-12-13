@@ -94,8 +94,9 @@ class ChatController(BaseController[User]):
 
         if env_config.OPENAI_API_KEY:
             llm = OpenAI(env_config.OPENAI_API_KEY)
+            llm.model = "gpt-4o"
             config["llm"] = llm
-
+        print(config)
         agent = Agent(connectors, config=config)
 
         # add to log get log id
